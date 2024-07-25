@@ -1,0 +1,3 @@
+[submodule "llama-agentic-system"]
+	path = llama-agentic-system
+	url = https://github.com/mattmdjaga/llama-agentic-system

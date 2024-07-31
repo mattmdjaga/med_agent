@@ -34,6 +34,11 @@ unzip KEGG_data.zip
 ```
 
 Place the "Gene Association File (GAF)" file in the `med_agent` folder, not in the `llama-agentic-system` folder.
+You can run this to uncompressed the GAF file:
+
+```bash
+gunzip goa_human.gaf.gz
+```
 
 ### 4. Create the Database
 
@@ -143,7 +148,9 @@ The system is designed to provide an LLM-powered agent capable of generating hyp
 
 An example query to the system might be:
 
-"What diseases is gene X associated with?"
+"get the go terms associated with NUDT4B"
+"get diseases associated with hsa:10213"
+"do downstream analvsis on hsa:5594"
 
 The system will use the `GeneDiseaseAssociationTool` to retrieve and provide this information.
 

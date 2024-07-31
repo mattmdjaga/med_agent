@@ -50,7 +50,7 @@ python pre_process.py
 
 ### 5. Setup Llama Agentic System
 
-Follow the instructions on the [llama-agentic-system](https://github.com/meta-llama/llama-agentic-system) repository for detailed setup steps, as the package is still in development. Here are the main steps:
+There's a README with setup instructions here [llama-agentic-system](https://github.com/meta-llama/llama-agentic-system) but below are the main instructions that should be enough.
 
 ```bash
 cd llama-agentic-system

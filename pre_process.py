@@ -1,10 +1,9 @@
 import xml.etree.ElementTree as ET
 import pandas as pd
 import sqlite3
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any
 
 
-# Function to parse KGML files and include disease information
 def parse_kgml(file_path: str, disease: str) -> List[Dict[str, Any]]:
     """
     Parses KGML files to extract gene-pathway relationships and associated diseases.
@@ -44,7 +43,7 @@ def parse_kgml(file_path: str, disease: str) -> List[Dict[str, Any]]:
     return pathways
 
 
-# Function to parse GAF files
+
 def parse_gaf(file_path: str) -> pd.DataFrame:
     """
     Parses GAF files to extract gene-GO term associations.
@@ -55,41 +54,36 @@ def parse_gaf(file_path: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame containing gene-GO term associations.
     """
-    try:
-        dtype = {2: str, 4: str}  # DB_Object_Symbol  # GO_ID
+    dtype = {2: str, 4: str}  # DB_Object_Symbol  # GO_ID
 
-        gaf_df = pd.read_csv(
-            file_path, sep="\t", comment="!", header=None, dtype=dtype, low_memory=False
-        )
-        gaf_df.columns = [
-            "DB",
-            "DB_Object_ID",
-            "DB_Object_Symbol",
-            "Qualifier",
-            "GO_ID",
-            "DB:Reference",
-            "Evidence_Code",
-            "With_or_From",
-            "Aspect",
-            "DB_Object_Name",
-            "DB_Object_Synonym",
-            "DB_Object_Type",
-            "Taxon",
-            "Date",
-            "Assigned_By",
-            "Annotation_Extension",
-            "Gene_Product_Form_ID",
-        ]
+    gaf_df = pd.read_csv(
+        file_path, sep="\t", comment="!", header=None, dtype=dtype, low_memory=False
+    )
+    gaf_df.columns = [
+        "DB",
+        "DB_Object_ID",
+        "DB_Object_Symbol",
+        "Qualifier",
+        "GO_ID",
+        "DB:Reference",
+        "Evidence_Code",
+        "With_or_From",
+        "Aspect",
+        "DB_Object_Name",
+        "DB_Object_Synonym",
+        "DB_Object_Type",
+        "Taxon",
+        "Date",
+        "Assigned_By",
+        "Annotation_Extension",
+        "Gene_Product_Form_ID",
+    ]
 
-        gene_go_associations = gaf_df[["DB_Object_Symbol", "GO_ID"]].drop_duplicates()
+    gene_go_associations = gaf_df[["DB_Object_Symbol", "GO_ID"]].drop_duplicates()
 
-        return gene_go_associations
-    except Exception as e:
-        print(f"Error parsing {file_path}: {e}")
-        return pd.DataFrame(columns=["DB_Object_Symbol", "GO_ID"])
+    return gene_go_associations
 
 
-# Function to insert gene data into the database
 def insert_genes(data: List[str], cursor: sqlite3.Cursor) -> None:
     """
     Inserts gene data into the database.
@@ -118,7 +112,6 @@ def insert_pathways(data: List[Dict[str, Any]], cursor: sqlite3.Cursor) -> None:
         )
 
 
-# Function to insert gene-GO associations data into the database
 def insert_gene_go_associations(data: pd.DataFrame, cursor: sqlite3.Cursor) -> None:
     """
     Inserts gene-GO associations data into the database.
@@ -134,7 +127,6 @@ def insert_gene_go_associations(data: pd.DataFrame, cursor: sqlite3.Cursor) -> N
         )
 
 
-# Function to create tables in the database
 def create_tables(cursor: sqlite3.Cursor) -> None:
     """
     Creates the necessary tables in the SQLite database.
@@ -167,7 +159,6 @@ def create_tables(cursor: sqlite3.Cursor) -> None:
     )
 
 
-# Main function to execute the parsing and database insertion
 def main() -> None:
     """
     Main function to parse KGML and GAF files and insert the data into the SQLite database.
@@ -187,22 +178,18 @@ def main() -> None:
         ("KEGG_data/KGML/hsa05210.xml", "Colorectal cancer"),
     ]
 
+    # Collect unique gene IDs
+    unique_genes = set()
+
     # Parse and insert pathways data
     for file_path, disease in files_and_diseases:
         pathways_data = parse_kgml(file_path, disease)
         insert_pathways(pathways_data, c)
-
-    # Collect unique gene IDs
-    all_pathways = []
-    for file_path, disease in files_and_diseases:
-        pathways = parse_kgml(file_path, disease)
-        all_pathways.extend(pathways)
-
-    df_all_pathways = pd.DataFrame(all_pathways)
-    unique_genes = df_all_pathways["gene_id"].unique()
+        for pathway in pathways_data:
+            unique_genes.add(pathway["gene_id"])
 
     # Insert unique genes
-    insert_genes(unique_genes.tolist(), c)
+    insert_genes(list(unique_genes), c)
 
     # Parse and insert gene-GO associations data
     gaf_data = parse_gaf("goa_human.gaf")
